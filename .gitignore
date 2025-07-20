@@ -1,3 +1,75 @@
 /coverage
 /lib
 /node_modules
+# Dependency directories
+node_modules/
+.pnp/
+.pnp.js
+
+# Build artifacts
+# Compiled JavaScript files (usually output by TypeScript compiler `tsc`)
+# The 'outDir' in your tsconfig.json is typically what goes here. Common examples:
+/dist/
+/build/
+/out/
+/lib/
+*.js # If you have a build step that outputs JS files alongside TS files in the same directory
+*.map # Source maps
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.log
+logs/
+
+# Environment variables
+.env
+.env.*
+# If you have an example env file that should be committed, add a negation:
+!*.env.example
+!.env.development.example # Example for specific env file
+
+# Editor and IDE configurations
+.vscode/ # VS Code settings
+.idea/   # IntelliJ IDEA / WebStorm settings
+*.sublime-project
+*.sublime-workspace
+.project
+.DS_Store # macOS specific desktop services store
+Thumbs.db # Windows thumbnail cache
+
+# Testing/Coverage reports
+/coverage/
+.nyc_output/
+
+# Various caches
+.eslintcache
+.parcel-cache/
+.rollup.cache/
+.vite/ # Vite's dev server cache
+.next/ # Next.js build output
+.nuxt/ # Nuxt.js build output
+.svelte-kit/ # SvelteKit build output
+
+# Project specific
+# If you have specific compiled files that don't go into a common 'dist' folder
+# For example, if your TS compiles to JS directly in the src folder:
+# src/**/*.js
+# src/**/*.map
+
+# VS Code generated
+*.code-workspace
+
+# NPM package locks (usually committed, but good to know they can be ignored if needed)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# If you use any specific tooling, add their generated files/folders
+# For example, for Playwright:
+test-results/
+playwright-report/
+
+# If you manually generate documentation that shouldn't be tracked
+# docs/output/ # Assuming your source docs are in /docs, but this is generated
