@@ -4,6 +4,7 @@ import { ItemRole } from "./Item.js";
  * Domain model representing a batch processing job
  */
 export interface Batch {
+	/** UUID v4 identifier for the batch */
 	readonly id: string;
 	readonly status: BatchStatus;
 	readonly totalItems: number;
@@ -41,6 +42,7 @@ export interface CreateBatchRequest {
  * Batch processing result
  */
 export interface BatchProcessingResult {
+	/** UUID v4 identifier for the batch */
 	readonly batchId: string;
 	readonly status: BatchStatus;
 	readonly totalItems: number;

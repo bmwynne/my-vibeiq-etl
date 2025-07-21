@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { CreateItemRequest } from "../models/Item.js";
 import {
 	Batch,
@@ -211,7 +212,7 @@ export class BatchProcessingService {
 	}
 
 	private generateBatchId(): string {
-		return `batch_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+		return uuidv4();
 	}
 
 	private chunkArray<T>(array: T[], chunkSize: number): T[][] {
