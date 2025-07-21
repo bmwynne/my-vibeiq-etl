@@ -8,6 +8,16 @@ I have designed an ETL batch loader service to ingest, transform, and integrate 
 
 ### **1. Architecture**
 
+#### **High-Level System Architecture**
+
+![High-Level Architecture](../../diagrams/high-level-architecture.png)
+
+_Figure 1: High-level view of the ETL Batch Loader system showing the main components and data flow between User, API Gateway, Lambda functions, SQS, DynamoDB, and the external Item Service API._
+
+#### **Interactive Architecture Diagram**
+
+For a detailed interactive view, visit: [Miro Board](https://miro.com/app/board/uXjVJcTvajo=/?share_link_id=162175946731)
+
 ### **Components**
 
 - **API Gateway**
@@ -37,30 +47,15 @@ I have designed an ETL batch loader service to ingest, transform, and integrate 
 
 ### **Data Flow Diagram**
 
-```
-User
-  |
-  v
-  API (POST /batches, GET /batches/)
-  |
-  v
-API Gateway
-  |
-  v
-Batch Ingestion Lambda
-  |
-  v
-SQS (Batches)
-  |
-  v
-Batch Processing Lambda
-  |
-  v
-Item Service API (lookups, publish, update)
-  |
-  v
-DynamoDB (Status/Reports)
-```
+![Data Flow Sequence](../../diagrams/data-flow-sequence.png)
+
+_Figure 2: Detailed sequence diagram showing the complete data flow from CSV upload through processing, including interactions between all system components and the external Item Service API._
+
+#### **Swimlane Process Flow**
+
+![Swimlane Process Flow](../../diagrams/swimlane-process-flow.png)
+
+_Figure 3: Swimlane diagram illustrating the responsibilities and interactions of each system component throughout the ETL process, from initial CSV upload to final status reporting._
 
 ---
 
@@ -156,7 +151,22 @@ Each item produced from the CSV should match this structure:
 - The Item Service API supports batch upserts of up to 100 items per request (API limit).
 - Lambda concurrency limit is 1,000 (can be increased if needed).
 - The downstream Item Service API and infrastructure can handle peak parallel load.
-- CSV files are well-formed and do not exceed reasonable size limits.
+- CSV files are well-formed and do not exceed reasonable size limits: APIG has a 10MB API Limit so some assumptions are being made in this solution:
+  - Byte Calculations
+  - Example Row 1:
+  1. nike-air-max = 12 bytes
+  2. air-max-90 = 9 bytes
+  3. Nike Air Max 90 = 14 bytes
+  4. Iconic running shoe with waffle outsole and Max Air unit = 59 bytes
+  5. Commas (3) = 3 bytes
+  6. Line ending = 1-2 bytes
+  7. Total: ~98-99 bytes
+  - Per row estimate assumption ~80-120 bytes
+  - 5k items is 400KB - 600KB
+  - 50k items is 4MB - 6MB
+  - 500k items is 40MB - 60MB
+  - 5M items is 400MB - 600MB
+  - At 5k items/minute ~100 bytes/row = ~500KB per batch. So currently Iam safe in the 10MB API Gateway limit. I would change this to S3 upload if very large files were to be used.
 - Authentication and authorization are handled at API Gateway.
 - Only CSV format is accepted for ingestion; JSON is not supported unless clarified by stakeholders.
 
