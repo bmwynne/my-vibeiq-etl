@@ -1,49 +1,148 @@
-<h1 align="center">My Vibeiq Etl</h1>
+# ETL Batch Loader
 
-<p align="center">A solution for the Vibe IQ Technical takehome for an ETL.</p>
+A TypeScript ETL system for processing CSV data into items via API Gateway and Lambda. This solution implements Domain-Driven Design with clean architecture for scalable batch processing.
 
-<p align="center">
-	<!-- prettier-ignore-start -->
-	<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-	<a href="#contributors" target="_blank"><img alt="👪 All Contributors: undefined" src="https://img.shields.io/badge/%F0%9F%91%AA_all_contributors-undefined-21bb42.svg" /></a>
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
-	<!-- prettier-ignore-end -->
-	<a href="https://github.com//my-vibeiq-etl/blob/main/.github/CODE_OF_CONDUCT.md" target="_blank"><img alt="🤝 Code of Conduct: Kept" src="https://img.shields.io/badge/%F0%9F%A4%9D_code_of_conduct-kept-21bb42" /></a>
-	<a href="https://codecov.io/gh//my-vibeiq-etl" target="_blank"><img alt="🧪 Coverage" src="https://img.shields.io/codecov/c/github//my-vibeiq-etl?label=%F0%9F%A7%AA%20coverage" /></a>
-	<a href="https://github.com//my-vibeiq-etl/blob/main/LICENSE.md" target="_blank"><img alt="📝 License: MIT" src="https://img.shields.io/badge/%F0%9F%93%9D_license-MIT-21bb42.svg" /></a>
-	<a href="http://npmjs.com/package/my-vibeiq-etl" target="_blank"><img alt="📦 npm version" src="https://img.shields.io/npm/v/my-vibeiq-etl?color=21bb42&label=%F0%9F%93%A6%20npm" /></a>
-	<img alt="💪 TypeScript: Strict" src="https://img.shields.io/badge/%F0%9F%92%AA_typescript-strict-21bb42.svg" />
-</p>
+## Architecture
 
-## Usage
+- **API Gateway**: REST endpoints for batch operations
+- **Lambda Functions**: Serverless processing with proper error handling
+- **Domain-Driven Design**: Clean separation of concerns with domain, application, and infrastructure layers
+- **TypeScript**: Strict typing with comprehensive validation
 
-```shell
-npm i my-vibeiq-etl
+## Setup
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+
+### Installation
+
+```bash
+git clone <repository-url>
+cd my-vibeiq-etl
+npm install
 ```
 
-```ts
-import {
-	ItemTransformationService,
-	CsvParsingRepositoryImpl,
-} from "my-vibeiq-etl";
+## Running the Application
 
-const csvParsingRepository = new CsvParsingRepositoryImpl();
-const transformationService = new ItemTransformationService();
+### Build
 
-// Parse and transform CSV data
-const csvContent =
-	"familyFederatedId,optionFederatedId,title,details\nnike-air-max,,Nike Air Max,Classic athletic footwear";
-const csvRows = await csvParsingRepository.parseCsvContent(csvContent);
-const items = transformationService.transformCsvRowsToItems(csvRows);
-
-console.log(`Processed ${items.length} items`);
+```bash
+npm run build
 ```
 
-## Development
+### Testing
 
-See [`.github/CONTRIBUTING.md`](./.github/CONTRIBUTING.md), then [`.github/DEVELOPMENT.md`](./.github/DEVELOPMENT.md).
-Thanks! 💖
+Run all tests:
 
-<!-- You can remove this notice if you don't want it 🙂 no worries! -->
+```bash
+npm test
+```
 
-> 💝 This package was templated with [`create-typescript-app`](https://github.com/JoshuaKGoldberg/create-typescript-app) using the [Bingo framework](https://create.bingo).
+Run specific test files:
+
+```bash
+npm test batch.test.ts
+npm test router.test.ts
+```
+
+### Development
+
+Format code:
+
+```bash
+npm run format
+```
+
+Lint code:
+
+```bash
+npm run lint
+```
+
+Type checking:
+
+```bash
+npm run tsc
+```
+
+### Examples
+
+Basic ETL workflow:
+
+```bash
+npm run example
+```
+
+Process Nike products CSV:
+
+```bash
+npm run example:csv
+```
+
+## API Endpoints
+
+### POST /batches
+
+Upload CSV data for batch processing.
+
+**Request:**
+
+```json
+{
+	"csvContent": "familyFederatedId,title,details\nnike-air-max,Nike Air Max,Classic sneaker"
+}
+```
+
+**Response:**
+
+```json
+{
+	"batchId": "batch_1735689600000",
+	"status": "pending",
+	"totalItems": 1,
+	"processedItems": 0,
+	"failedItems": 0
+}
+```
+
+### GET /batches/{batchId}
+
+Get batch processing status and results.
+
+**Response:**
+
+```json
+{
+	"batchId": "batch_1735689600000",
+	"status": "completed",
+	"totalItems": 1,
+	"processedItems": 1,
+	"failedItems": 0,
+	"errors": []
+}
+```
+
+## CSV Format
+
+Expected CSV structure:
+
+```csv
+familyFederatedId,optionFederatedId,title,details
+nike-air-max,,Nike Air Max,Classic athletic footwear
+nike-air-max,air-max-270,Nike Air Max 270,Lifestyle shoe with Max Air unit
+```
+
+- `familyFederatedId`: Required family identifier
+- `optionFederatedId`: Optional variant identifier
+- `title`: Product name
+- `details`: Product description
+
+## Development Scripts
+
+- `npm run build` - Build production bundle
+- `npm run format` - Format code with Prettier
+- `npm run lint` - Lint with ESLint
+- `npm run test` - Run test suite
+- `npm run tsc` - TypeScript compilation check
