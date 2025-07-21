@@ -11,7 +11,6 @@ export const main = middy(
 		try {
 			return await router(event);
 		} catch (error) {
-			console.error("Unhandled error in API handler:", error);
 			return {
 				statusCode: 500,
 				headers: {

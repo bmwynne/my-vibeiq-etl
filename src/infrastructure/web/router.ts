@@ -71,11 +71,6 @@ export async function router(
 	const { rawPath, requestContext } = event;
 	const method = requestContext.http.method as HttpMethod;
 
-	console.log(`INFO: ${method} ${rawPath}`, {
-		headers: event.headers,
-		queryStringParameters: event.queryStringParameters,
-	});
-
 	// Find matching route
 	for (const route of routes) {
 		if (route.method === method && route.pattern.test(rawPath)) {
