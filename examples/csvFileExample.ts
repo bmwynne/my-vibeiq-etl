@@ -21,18 +21,20 @@ export async function processNikeProductsCsvFile() {
 		console.log(`INFO: Reading CSV file: ${csvFilePath}`);
 
 		const csvContent = await readFile(csvFilePath, "utf-8");
-		console.log(`INFO: File size: ${csvContent.length} characters\n`);
+		console.log(`INFO: File size: ${String(csvContent.length)} characters\n`);
 
 		// Step 2: Parse CSV content
 		console.log("INFO: Parsing CSV content...");
 		const csvRows = await csvParsingRepository.parseCsvContent(csvContent);
-		console.log(`INFO: Successfully parsed ${csvRows.length} CSV rows\n`);
+		console.log(
+			`INFO: Successfully parsed ${String(csvRows.length)} CSV rows\n`,
+		);
 
 		// Step 3: Transform to items
 		console.log("INFO: Transforming CSV rows to items...");
 		const transformedItems =
 			transformationService.transformCsvRowsToItems(csvRows);
-		console.log(`INFO: Transformed ${transformedItems.length} items\n`);
+		console.log(`INFO: Transformed ${String(transformedItems.length)} items\n`);
 
 		// Step 4: Ensure family integrity
 		console.log("INFO: Ensuring family items exist...");
@@ -41,7 +43,7 @@ export async function processNikeProductsCsvFile() {
 			csvRows,
 		);
 		console.log(
-			`INFO: Final item count: ${itemsWithFamilies.length} (including any auto-generated families)\n`,
+			`INFO: Final item count: ${String(itemsWithFamilies.length)} (including any auto-generated families)\n`,
 		);
 
 		// Step 5: Display results organized by family
@@ -56,19 +58,19 @@ export async function processNikeProductsCsvFile() {
 			item.roles.includes("option"),
 		);
 
-		console.log(`\n PRODUCT FAMILIES (${familyItems.length}):`);
+		console.log(`\n PRODUCT FAMILIES (${String(familyItems.length)}):`);
 		console.log("-".repeat(30));
 		familyItems.forEach((item: CreateItemRequest, index: number) => {
-			console.log(`${index + 1}. ${item.name}`);
+			console.log(`${String(index + 1)}. ${item.name}`);
 			console.log(`   ID: ${item.federatedId}`);
 			console.log(`   Description: ${item.description}`);
 			console.log("");
 		});
 
-		console.log(`\n PRODUCT VARIANTS/OPTIONS (${optionItems.length}):`);
+		console.log(`\n PRODUCT VARIANTS/OPTIONS (${String(optionItems.length)}):`);
 		console.log("-".repeat(35));
 		optionItems.forEach((item: CreateItemRequest, index: number) => {
-			console.log(`${index + 1}. ${item.name}`);
+			console.log(`${String(index + 1)}. ${item.name}`);
 			console.log(`   ID: ${item.federatedId}`);
 			console.log(`   Description: ${item.description}`);
 			console.log("");
@@ -88,7 +90,10 @@ export async function processNikeProductsCsvFile() {
 					(opt: CreateItemRequest) => opt.federatedId === row.optionFederatedId,
 				);
 				if (option) {
-					familyToOptionsMap.get(row.familyFederatedId)!.push(option);
+					const familyOptions = familyToOptionsMap.get(row.familyFederatedId);
+					if (familyOptions) {
+						familyOptions.push(option);
+					}
 				}
 			}
 		});
@@ -97,7 +102,7 @@ export async function processNikeProductsCsvFile() {
 			const family = familyItems.find(
 				(f: CreateItemRequest) => f.federatedId === familyId,
 			);
-			console.log(`INFO: ${family?.name || familyId}:`);
+			console.log(`INFO: ${family?.name ?? familyId}:`);
 			options.forEach((option: CreateItemRequest) => {
 				console.log(`   └── ${option.name} (${option.federatedId})`);
 			});
@@ -116,8 +121,10 @@ export async function processNikeProductsCsvFile() {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
 	processNikeProductsCsvFile()
-		.then(() => console.log("\nINFO: Example completed successfully!"))
-		.catch((error) => {
+		.then(() => {
+			console.log("\nINFO: Example completed successfully!");
+		})
+		.catch((error: unknown) => {
 			console.error("\nERROR: Example failed:", error);
 			process.exit(1);
 		});

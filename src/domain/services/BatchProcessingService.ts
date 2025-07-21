@@ -37,7 +37,7 @@ export class BatchProcessingService {
 
 		try {
 			// 1. Create initial batch record
-			const initialBatch = await this.createInitialBatch(batchId);
+			await this.createInitialBatch(batchId);
 
 			// 2. Parse CSV content
 			const csvRows = await this.csvParsingRepository.parseCsvContent(
@@ -158,7 +158,7 @@ export class BatchProcessingService {
 	private async processSingleBatch(items: CreateItemRequest[]): Promise<void> {
 		if (items.length > BatchProcessingService.MAX_BATCH_SIZE) {
 			throw new Error(
-				`Batch size ${items.length} exceeds maximum of ${BatchProcessingService.MAX_BATCH_SIZE}`,
+				`Batch size ${String(items.length)} exceeds maximum of ${String(BatchProcessingService.MAX_BATCH_SIZE)}`,
 			);
 		}
 
@@ -169,7 +169,7 @@ export class BatchProcessingService {
 
 		// 2. Separate into create vs update batches
 		const itemsToCreate: CreateItemRequest[] = [];
-		const itemsToUpdate: Array<CreateItemRequest & { id: string }> = [];
+		const itemsToUpdate: (CreateItemRequest & { id: string })[] = [];
 
 		items.forEach((item) => {
 			const existingId = existingItems.get(item.federatedId);

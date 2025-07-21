@@ -45,9 +45,7 @@ export interface ItemServiceRepository {
 	 * @throws Error if batch size exceeds limit or API call fails
 	 */
 	updateItemsBatch(
-		items: Array<
-			import("../models/Item.js").CreateItemRequest & { id: string }
-		>,
+		items: (import("../models/Item.js").CreateItemRequest & { id: string })[],
 	): Promise<string[]>;
 }
 

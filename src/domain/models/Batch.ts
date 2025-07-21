@@ -1,5 +1,3 @@
-import { ItemRole } from "./Item.js";
-
 /**
  * Domain model representing a batch processing job
  */

@@ -10,6 +10,8 @@ export default tseslint.config(
 			"lib",
 			"node_modules",
 			"package-lock.json",
+			"**/*.test.ts",
+			"examples/**",
 		],
 	},
 	{ linterOptions: { reportUnusedDisableDirectives: "error" } },

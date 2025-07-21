@@ -7,7 +7,7 @@ import { CsvRow } from "../domain/models/Item.js";
  * Provides robust parsing with proper error handling and validation
  */
 export class CsvParsingRepositoryImpl implements CsvParsingRepository {
-	async parseCsvContent(csvContent: string): Promise<CsvRow[]> {
+	parseCsvContent(csvContent: string): Promise<CsvRow[]> {
 		try {
 			// Parse CSV with headers, automatic type detection, and error handling
 			const records = parse(csvContent, {
@@ -17,11 +17,13 @@ export class CsvParsingRepositoryImpl implements CsvParsingRepository {
 				cast: false, // Keep all values as strings for now
 				relax_column_count: false, // Strict column count validation
 				relax_quotes: true, // Allow flexible quote handling
-			}) as Record<string, string>[];
+			});
 
 			// Validate that we have data
 			if (records.length === 0) {
-				throw new Error("CSV contains no data rows");
+				return Promise.reject(
+					new Error("CSV parsing failed: CSV contains no data rows"),
+				);
 			}
 
 			// Validate required columns exist
@@ -33,39 +35,47 @@ export class CsvParsingRepositoryImpl implements CsvParsingRepository {
 				(col) => !availableColumns.includes(col),
 			);
 			if (missingColumns.length > 0) {
-				throw new Error(
-					`CSV missing required columns: ${missingColumns.join(", ")}`,
+				return Promise.reject(
+					new Error(
+						`CSV parsing failed: CSV missing required columns: ${missingColumns.join(", ")}`,
+					),
 				);
 			}
 
 			// Transform records to domain objects
 			const csvRows: CsvRow[] = records.map((record, index) => {
+				// Type assertion for parsed CSV records
+				const typedRecord = record as Record<string, string>;
+
 				// Validate required fields are not empty
-				if (!record.familyFederatedId?.trim()) {
-					throw new Error(`Row ${index + 2}: familyFederatedId is required`);
+				if (!typedRecord.familyFederatedId.trim()) {
+					throw new Error(
+						`Row ${String(index + 2)}: familyFederatedId is required`,
+					);
 				}
-				if (!record.title?.trim()) {
-					throw new Error(`Row ${index + 2}: title is required`);
+				if (!typedRecord.title.trim()) {
+					throw new Error(`Row ${String(index + 2)}: title is required`);
 				}
-				if (!record.details?.trim()) {
-					throw new Error(`Row ${index + 2}: details is required`);
+				if (!typedRecord.details.trim()) {
+					throw new Error(`Row ${String(index + 2)}: details is required`);
 				}
 
 				return {
-					familyFederatedId: record.familyFederatedId.trim(),
-					optionFederatedId: record.optionFederatedId?.trim() || undefined,
-					title: record.title.trim(),
-					details: record.details.trim(),
+					familyFederatedId: typedRecord.familyFederatedId.trim(),
+					optionFederatedId: typedRecord.optionFederatedId
+						? typedRecord.optionFederatedId.trim() || undefined
+						: undefined,
+					title: typedRecord.title.trim(),
+					details: typedRecord.details.trim(),
 				};
 			});
 
-			return csvRows;
+			return Promise.resolve(csvRows);
 		} catch (error) {
 			// Wrap CSV parsing errors with more context
-			if (error instanceof Error) {
-				throw new Error(`CSV parsing failed: ${error.message}`);
-			}
-			throw new Error(`CSV parsing failed: ${String(error)}`);
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
+			return Promise.reject(new Error(`CSV parsing failed: ${errorMessage}`));
 		}
 	}
 }

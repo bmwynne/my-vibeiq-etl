@@ -1,11 +1,5 @@
 import { CsvParsingRepositoryImpl } from "../src/infrastructure/CsvParsingRepository.js";
 import { ItemTransformationService } from "../src/domain/services/ItemTransformationService.js";
-import { BatchProcessingService } from "../src/domain/services/BatchProcessingService.js";
-import { Item, CreateItemRequest, CsvRow } from "../src/domain/models/Item.js";
-import {
-	ItemServiceRepository,
-	CsvParsingRepository,
-} from "../src/domain/repositories/Repositories.js";
 
 /**
  * Demonstrating how to use the ETL core functionality
@@ -31,12 +25,12 @@ nike-dunk,dunk-low-panda,Nike Dunk Low Panda,Popular black and white colorway of
 
 		// Step 1: Parse CSV
 		const csvRows = await csvParsingRepository.parseCsvContent(csvContent);
-		console.log(`INFO: Parsed ${csvRows.length} CSV rows`);
+		console.log(`INFO: Parsed ${String(csvRows.length)} CSV rows`);
 
 		// Step 2: Transform to items
 		const transformedItems =
 			transformationService.transformCsvRowsToItems(csvRows);
-		console.log(`INFO:Transformed ${transformedItems.length} items`);
+		console.log(`INFO:Transformed ${String(transformedItems.length)} items`);
 
 		// Step 3: Ensure family items exist
 		const itemsWithFamilies = transformationService.ensureFamilyItemsExist(
@@ -44,14 +38,14 @@ nike-dunk,dunk-low-panda,Nike Dunk Low Panda,Popular black and white colorway of
 			csvRows,
 		);
 		console.log(
-			`INFO: Final item count: ${itemsWithFamilies.length} (including auto-generated families)`,
+			`INFO: Final item count: ${String(itemsWithFamilies.length)} (including auto-generated families)`,
 		);
 
 		// Display results
 		console.log("INFO: Transformation Results:");
 		itemsWithFamilies.forEach((item, index) => {
 			console.log(
-				`${index + 1}. ${item.name} (${item.roles.join(", ")}) - ID: ${item.federatedId}`,
+				`${String(index + 1)}. ${item.name} (${item.roles.join(", ")}) - ID: ${item.federatedId}`,
 			);
 		});
 
@@ -65,8 +59,10 @@ nike-dunk,dunk-low-panda,Nike Dunk Low Panda,Popular black and white colorway of
 // Run example if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
 	exampleETLWorkflow()
-		.then(() => console.log("\n INFO: Example completed successfully!"))
-		.catch((error) => {
+		.then(() => {
+			console.log("\n INFO: Example completed successfully!");
+		})
+		.catch((error: unknown) => {
 			console.error("\nERROR: Example failed:", error);
 			process.exit(1);
 		});
