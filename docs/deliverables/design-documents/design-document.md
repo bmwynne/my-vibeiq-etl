@@ -10,29 +10,29 @@ I have designed an ETL batch loader service to ingest, transform, and integrate 
 
 ### **Components**
 
-- **API Gateway**  
-  - Exposes REST endpoints:  
-    - `POST /batches`: Accepts CSV uploads  
+- **API Gateway**
+  - Exposes REST endpoints:
+    - `POST /batches`: Accepts CSV uploads
     - `GET /batches/{batchId}`: Returns batch processing status and report
 
-- **Lambda Functions**  
-  - **Batch Ingestion Lambda**:  
-    - Parses incoming CSV files  
-    - Transforms each row to the target item schema  
-    - Splits items into batches of up to 100 (API limit)  
-    - Publishes batches to SQS for processing  
-  - **Batch Processing Lambda**:  
-    - Triggered by SQS messages  
-    - Processes each batch concurrently (up to 1,000 at a time)  
-    - Makes necessary calls to the Item Service API (e.g., lookups, publishing, updating) to complete item integration  
+- **Lambda Functions**
+  - **Batch Ingestion Lambda**:
+    - Parses incoming CSV files
+    - Transforms each row to the target item schema
+    - Splits items into batches of up to 100 (API limit)
+    - Publishes batches to SQS for processing
+  - **Batch Processing Lambda**:
+    - Triggered by SQS messages
+    - Processes each batch concurrently (up to 1,000 at a time)
+    - Makes necessary calls to the Item Service API (e.g., lookups, publishing, updating) to complete item integration
     - Handles errors and logs results
 
-- **SQS**  
-  - Buffers batches for concurrent processing  
+- **SQS**
+  - Buffers batches for concurrent processing
   - Ensures reliable delivery and retry of failed batches
 
-- **DynamoDB**  
-  - Stores batch status, processing results, and error reports  
+- **DynamoDB**
+  - Stores batch status, processing results, and error reports
   - Enables reporting via API
 
 ### **Data Flow Diagram**
@@ -67,25 +67,26 @@ DynamoDB (Status/Reports)
 ## **2. Data Transformation**
 
 - **Input:** CSV file containing item data
-- **Transformation:**  
+- **Transformation:**
   - For each row in the CSV, I map and validate fields according to the Target Item Schema specified.
   - I ensure all required fields are present and correctly formatted.
   - If the transformation requires additional data or validation, I make calls to the Item Service API (for lookups, publishing, or updating).
-- **Validation:**  
+- **Validation:**
   - I validate each item against the Target Item Schema.
   - I handle missing or invalid data according to the requirements.
-- **Error Handling:**  
+- **Error Handling:**
   - Invalid rows are logged and excluded from batch submission.
   - Errors encountered during API calls or transformation are tracked and reported.
 
 **CSV Input Format**
+
 1. Each row in the CSV represents either a family or an option:
 2. familyFederatedId (string, required): Identifies the family (product).
 3. optionFederatedId (string, optional): Identifies the option (variant).
 4. title (string): Name/title of the item.
 5. details (string): Description/details of the item.
 6. If optionFederatedId is present, the row is an option (variant).
-    - If not, the row is a family (product).
+   - If not, the row is a family (product).
 
 **Target Item Schema (Output Format)**
 
@@ -176,12 +177,12 @@ Each item produced from the CSV should match this structure:
 13. Are there any constraints on the allowed characters or formats for federatedId, title, or details?
 14. Should the loader support rollback or compensation logic if a batch fails after partial success?
 15. Is there a required SLA or notification process for failed batches or ingestion errors?
-16. If I were to include a persist; are there any requirements for data retention or purging in DynamoDB/reporting storage? 
-17. Should the loader support multi-tenancy or handle data segregation for different clients? I will default to no. 
+16. If I were to include a persist; are there any requirements for data retention or purging in DynamoDB/reporting storage?
+17. Should the loader support multi-tenancy or handle data segregation for different clients? I will default to no.
 18. Are there any requirements for internationalization or localization of item names/descriptions?
 19. Should the loader validate relationships between options and families beyond federatedId matching?
 20. Could this product be extended to different integration protocols? Should this system be designed to be decoupled from HTTP API as sole integration layer?
-21. Could this product be designed to include data ingestion from other company data sets or persistent layers. Example: Ingestion from flat files store in s3. 
+21. Could this product be designed to include data ingestion from other company data sets or persistent layers. Example: Ingestion from flat files store in s3.
 
 ---
 
@@ -238,6 +239,7 @@ With a batch size of 100, the system still exceeds the required throughput and d
 - I implement exponential backoff and jitter for retries to avoid overwhelming the Item Service API during transient failures.
 - Dead-letter queues (DLQ) are configured for SQS to capture batches that fail repeatedly, enabling manual inspection and remediation.
 - Metrics and alerts are set up for Lambda invocations, SQS queue depth, batch failures, and API response times to proactively manage
+
 ---
 
 ## **Summary**
