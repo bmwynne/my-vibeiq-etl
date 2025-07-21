@@ -23,7 +23,7 @@ const routes: Route[] = [
 	{
 		method: "GET",
 		pattern: /^\/batches\/([^/]+)$/,
-		handler: (event, params) => handleBatches(event, params?.batchId),
+		handler: (event, params) => handleBatches(event, params),
 		paramNames: ["batchId"],
 	},
 	{

@@ -120,10 +120,11 @@ const getBatchQuery: GetBatchQuery | null = null;
 
 /**
  * Infrastructure layer HTTP handler for batch operations
+ * Delegates to application layer use cases following proper DDD layering
  */
 export async function handleBatches(
 	event: APIGatewayProxyEventV2,
-	batchId?: string,
+	params?: Record<string, string>,
 ): Promise<APIGatewayProxyResult> {
 	const method = event.requestContext.http.method;
 
@@ -134,8 +135,8 @@ export async function handleBatches(
 		}
 
 		// GET /batches/{batchId} - Get batch status
-		if (method === "GET" && batchId) {
-			return await handleGetBatchStatus(batchId);
+		if (method === "GET" && params?.batchId) {
+			return await handleGetBatchStatus(params.batchId);
 		}
 
 		return createErrorResponse(
