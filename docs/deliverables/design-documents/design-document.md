@@ -10,7 +10,7 @@ I have designed an ETL batch loader service to ingest, transform, and integrate 
 
 #### **High-Level System Architecture**
 
-![High-Level Architecture](../../diagrams/high-level-architecture.png)
+![High-Level Architecture](../../diagrams/architecture-diagram.png)
 
 _Figure 1: High-level view of the ETL Batch Loader system showing the main components and data flow between User, API Gateway, Lambda functions, SQS, DynamoDB, and the external Item Service API._
 
@@ -47,13 +47,13 @@ For a detailed interactive view, visit: [Miro Board](https://miro.com/app/board/
 
 ### **Data Flow Diagram**
 
-![Data Flow Sequence](../../diagrams/data-flow-sequence.png)
+![Data Flow Sequence](../../diagrams/data-flow.png)
 
 _Figure 2: Detailed sequence diagram showing the complete data flow from CSV upload through processing, including interactions between all system components and the external Item Service API._
 
 #### **Swimlane Process Flow**
 
-![Swimlane Process Flow](../../diagrams/swimlane-process-flow.png)
+![Swimlane Process Flow](../../diagrams/swim-lane.png)
 
 _Figure 3: Swimlane diagram illustrating the responsibilities and interactions of each system component throughout the ETL process, from initial CSV upload to final status reporting._
 
