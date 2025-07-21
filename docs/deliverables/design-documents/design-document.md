@@ -40,6 +40,7 @@ For a detailed interactive view, visit: [Miro Board](https://miro.com/app/board/
 - **SQS**
   - Buffers batches for concurrent processing
   - Ensures reliable delivery and retry of failed batches
+  - DLQ configured for batches that fail after maximum retry attempts
 
 - **DynamoDB**
   - Stores batch status, processing results, and error reports
