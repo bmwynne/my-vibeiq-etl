@@ -20,11 +20,14 @@
 	],
 	"scripts": {
 		"build": "tsdown",
-		"format": "prettier .",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
 		"lint": "eslint . --max-warnings 0",
 		"prepare": "husky",
 		"test": "vitest",
-		"tsc": "tsc"
+		"tsc": "tsc",
+		"example": "npx tsx examples/example.ts",
+		"example:csv": "npx tsx examples/csvFileExample.ts"
 	},
 	"lint-staged": {
 		"*": "prettier --ignore-unknown --write"
@@ -48,5 +51,10 @@
 	},
 	"publishConfig": {
 		"provenance": true
+	},
+	"dependencies": {
+		"@types/uuid": "^10.0.0",
+		"csv-parse": "^6.1.0",
+		"uuid": "^11.1.0"
 	}
 }

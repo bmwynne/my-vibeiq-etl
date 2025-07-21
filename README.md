@@ -22,9 +22,21 @@ npm i my-vibeiq-etl
 ```
 
 ```ts
-import { greet } from "my-vibeiq-etl";
+import {
+	ItemTransformationService,
+	CsvParsingRepositoryImpl,
+} from "my-vibeiq-etl";
 
-greet("Hello, world! 💖");
+const csvParsingRepository = new CsvParsingRepositoryImpl();
+const transformationService = new ItemTransformationService();
+
+// Parse and transform CSV data
+const csvContent =
+	"familyFederatedId,optionFederatedId,title,details\nnike-air-max,,Nike Air Max,Classic athletic footwear";
+const csvRows = await csvParsingRepository.parseCsvContent(csvContent);
+const items = transformationService.transformCsvRowsToItems(csvRows);
+
+console.log(`Processed ${items.length} items`);
 ```
 
 ## Development
