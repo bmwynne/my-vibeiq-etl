@@ -48,7 +48,7 @@ nike-dunk,dunk-low-panda,Nike Dunk Low Panda,Popular black and white colorway of
 		);
 
 		// Display results
-		console.log("INFO:Transformation Results:");
+		console.log("INFO: Transformation Results:");
 		itemsWithFamilies.forEach((item, index) => {
 			console.log(
 				`${index + 1}. ${item.name} (${item.roles.join(", ")}) - ID: ${item.federatedId}`,
@@ -67,7 +67,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 	exampleETLWorkflow()
 		.then(() => console.log("\n INFO: Example completed successfully!"))
 		.catch((error) => {
-			console.error("\n ERROR: Example failed:", error);
+			console.error("\nERROR: Example failed:", error);
 			process.exit(1);
 		});
 }
