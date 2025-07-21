@@ -1,0 +1,394 @@
+openapi: 3.0.3
+info:
+  title: ETL Batch Loader API
+  description: |
+    A REST API for processing CSV files containing product data through an ETL pipeline.
+
+    ## Overview
+    The ETL Batch Loader processes CSV files with product/item data, transforming them according to business rules and integrating with downstream systems. It supports processing up to 5 million items per day with peak throughput of 5,000 items per minute.
+
+    ## Processing Flow
+    1. **Upload CSV**: Submit CSV file via POST /batches
+    2. **Parse & Transform**: System parses CSV and applies business transformations
+    3. **Batch Processing**: Items are processed in batches for optimal performance
+    4. **Status Tracking**: Monitor progress via GET /batches/{batchId}
+
+    ## CSV Format Requirements
+    The CSV must contain the following columns:
+    - `familyFederatedId` (required): Identifier for product family
+    - `optionFederatedId` (optional): Identifier for specific product variant
+    - `title` (required): Product name/title
+    - `details` (required): Product description
+  version: 1.0.0
+  contact:
+    email: wynnebrandon@gmail.com
+  license:
+    name: MIT
+servers:
+  - url: https://api.vibeiq-etl.example.com/v1
+    description: Production server
+  - url: https://staging-api.vibeiq-etl.example.com/v1
+    description: Staging server
+
+paths:
+  /batches:
+    post:
+      summary: Create new batch processing job
+      description: |
+        Uploads a CSV file and initiates batch processing. The CSV will be parsed, validated, and queued for processing.
+
+        ## CSV Requirements
+        - Maximum file size: 100MB
+        - Required columns: familyFederatedId, title, details
+        - Optional columns: optionFederatedId
+        - Maximum 5,000 rows per batch
+      operationId: createBatch
+      tags:
+        - Batch Processing
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV file containing product data
+              required:
+                - file
+          text/csv:
+            schema:
+              type: string
+              format: binary
+              description: Raw CSV content
+            example: |
+              familyFederatedId,optionFederatedId,title,details
+              nike-air-max,,Nike Air Max,Classic athletic footwear line
+              nike-air-max,air-max-90,Nike Air Max 90,Iconic running shoe
+      responses:
+        "201":
+          description: Batch created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchResponse"
+              example:
+                batchId: "550e8400-e29b-41d4-a716-446655440000"
+                status: "pending"
+                totalItems: 150
+                processedItems: 0
+                failedItems: 0
+                createdAt: "2025-07-20T14:30:00Z"
+                updatedAt: "2025-07-20T14:30:00Z"
+                errors: []
+        "400":
+          description: Invalid CSV format or missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missing_columns:
+                  summary: Missing required columns
+                  value:
+                    error: "CSV parsing failed: CSV missing required columns: familyFederatedId, title"
+                    code: "INVALID_CSV_FORMAT"
+                    timestamp: "2025-07-20T14:30:00Z"
+                empty_csv:
+                  summary: Empty CSV file
+                  value:
+                    error: "CSV parsing failed: CSV contains no data rows"
+                    code: "EMPTY_CSV"
+                    timestamp: "2025-07-20T14:30:00Z"
+        "413":
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "File size exceeds maximum limit of 100MB"
+                code: "FILE_TOO_LARGE"
+                timestamp: "2025-07-20T14:30:00Z"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "Rate limit exceeded. Maximum 100 requests per hour"
+                code: "RATE_LIMIT_EXCEEDED"
+                timestamp: "2025-07-20T14:30:00Z"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /batches/{batchId}:
+    get:
+      summary: Get batch processing status
+      description: |
+        Retrieves the current status and progress of a batch processing job, including any errors that occurred during processing.
+      operationId: getBatchStatus
+      tags:
+        - Batch Processing
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          description: UUID of the batch to retrieve
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        "200":
+          description: Batch status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchResponse"
+              examples:
+                processing:
+                  summary: Batch currently processing
+                  value:
+                    batchId: "550e8400-e29b-41d4-a716-446655440000"
+                    status: "processing"
+                    totalItems: 150
+                    processedItems: 75
+                    failedItems: 2
+                    createdAt: "2025-07-20T14:30:00Z"
+                    updatedAt: "2025-07-20T14:35:00Z"
+                    errors:
+                      - itemFederatedId: "nike-air-max-invalid"
+                        error: "Invalid product data: missing title"
+                        timestamp: "2025-07-20T14:32:00Z"
+                completed:
+                  summary: Batch completed successfully
+                  value:
+                    batchId: "550e8400-e29b-41d4-a716-446655440000"
+                    status: "completed"
+                    totalItems: 150
+                    processedItems: 150
+                    failedItems: 0
+                    createdAt: "2025-07-20T14:30:00Z"
+                    updatedAt: "2025-07-20T14:40:00Z"
+                    errors: []
+                failed:
+                  summary: Batch processing failed
+                  value:
+                    batchId: "550e8400-e29b-41d4-a716-446655440000"
+                    status: "failed"
+                    totalItems: 150
+                    processedItems: 25
+                    failedItems: 125
+                    createdAt: "2025-07-20T14:30:00Z"
+                    updatedAt: "2025-07-20T14:35:00Z"
+                    errors:
+                      - itemFederatedId: "system"
+                        error: "Downstream API unavailable"
+                        timestamp: "2025-07-20T14:35:00Z"
+        "404":
+          description: Batch not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "Batch with ID 550e8400-e29b-41d4-a716-446655440000 not found"
+                code: "BATCH_NOT_FOUND"
+                timestamp: "2025-07-20T14:30:00Z"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the ETL service
+      operationId: getHealthStatus
+      tags:
+        - System
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-07-20T14:30:00Z"
+                  version:
+                    type: string
+                    example: "1.0.0"
+        "503":
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "unhealthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  errors:
+                    type: array
+                    items:
+                      type: string
+
+components:
+  schemas:
+    BatchResponse:
+      type: object
+      description: Response containing batch processing information
+      properties:
+        batchId:
+          type: string
+          format: uuid
+          description: Unique identifier for the batch (UUID v4)
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        status:
+          $ref: "#/components/schemas/BatchStatus"
+        totalItems:
+          type: integer
+          minimum: 0
+          description: Total number of items in the batch
+          example: 150
+        processedItems:
+          type: integer
+          minimum: 0
+          description: Number of items successfully processed
+          example: 148
+        failedItems:
+          type: integer
+          minimum: 0
+          description: Number of items that failed processing
+          example: 2
+        createdAt:
+          type: string
+          format: date-time
+          description: When the batch was created
+          example: "2025-07-20T14:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the batch was last updated
+          example: "2025-07-20T14:35:00Z"
+        errors:
+          type: array
+          description: List of processing errors
+          items:
+            $ref: "#/components/schemas/BatchError"
+      required:
+        - batchId
+        - status
+        - totalItems
+        - processedItems
+        - failedItems
+        - createdAt
+        - updatedAt
+        - errors
+
+    BatchStatus:
+      type: string
+      enum:
+        - pending
+        - processing
+        - completed
+        - failed
+        - partial
+      description: |
+        Current status of the batch:
+        - `pending`: Batch created, waiting to start processing
+        - `processing`: Batch is currently being processed
+        - `completed`: All items processed successfully
+        - `failed`: Processing failed (system error)
+        - `partial`: Some items processed successfully, others failed
+
+    BatchError:
+      type: object
+      description: Details about a processing error
+      properties:
+        itemFederatedId:
+          type: string
+          description: Identifier of the item that failed processing
+          example: "nike-air-max-invalid"
+        error:
+          type: string
+          description: Description of the error that occurred
+          example: "Invalid product data: missing required title field"
+        timestamp:
+          type: string
+          format: date-time
+          description: When the error occurred
+          example: "2025-07-20T14:32:00Z"
+      required:
+        - itemFederatedId
+        - error
+        - timestamp
+
+    ErrorResponse:
+      type: object
+      description: Standard error response format
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: "CSV parsing failed: missing required columns"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "INVALID_CSV_FORMAT"
+        timestamp:
+          type: string
+          format: date-time
+          description: When the error occurred
+          example: "2025-07-20T14:30:00Z"
+        details:
+          type: object
+          description: Additional error details (optional)
+          additionalProperties: true
+      required:
+        - error
+        - code
+        - timestamp
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authentication
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+tags:
+  - name: Batch Processing
+    description: Operations for CSV batch processing
+  - name: System
+    description: System health and monitoring endpoints
