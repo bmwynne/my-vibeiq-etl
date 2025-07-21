@@ -4,11 +4,10 @@ name: Prepare
 
 runs:
   steps:
-    - uses: pnpm/action-setup@v4
     - uses: actions/setup-node@v4
       with:
-        cache: pnpm
+        cache: npm
         node-version: 24.3.0
-    - run: pnpm install --frozen-lockfile
+    - run: npm ci
       shell: bash
   using: composite
