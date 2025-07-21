@@ -28,7 +28,7 @@ export class CsvParsingRepositoryImpl implements CsvParsingRepository {
 
 			// Validate required columns exist
 			const requiredColumns = ["familyFederatedId", "title", "details"];
-			const firstRecord = records[0];
+			const firstRecord = records[0] as Record<string, string>;
 			const availableColumns = Object.keys(firstRecord);
 
 			const missingColumns = requiredColumns.filter(
