@@ -15,6 +15,19 @@ export class CreateBatchCommand {
 
 	/**
 	 * Execute the create batch command
+	 *
+	 * Step 1: Ingestion Lambda Flow (current implementation):
+	 * 1. Parse and validate CSV content
+	 * 2. Transform rows to CreateItemRequest objects
+	 * 3. Split into processing batches (100 items each)
+	 * 4. Create initial batch record in DynamoDB
+	 * 5. TODO: Publish batches to SQS for async processing
+	 * 6. Return batch ID and initial status to client
+	 *
+	 * Step 2: Processing via SQS (future implementation):
+	 * - SQS triggers ProcessBatchCommand for each batch
+	 * - ProcessBatchCommand calls Item Service API
+	 * - Updates final batch status in DynamoDB
 	 */
 	async execute(request: CreateBatchRequest): Promise<BatchProcessingResult> {
 		console.log(
