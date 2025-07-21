@@ -64,7 +64,6 @@ Thumbs.db # Windows thumbnail cache
 # NPM package locks (usually committed, but good to know they can be ignored if needed)
 # package-lock.json
 # yarn.lock
-# pnpm-lock.yaml
 
 # If you use any specific tooling, add their generated files/folders
 # For example, for Playwright:
